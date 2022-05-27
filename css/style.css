@@ -1,1 +1,70 @@
-html, body { width:100%; height:100%; margin:0; padding:0; overflow:hidden; }
+html, body { width: 100%; height: 100%; margin: 0; padding: 0; font-family: 'Lato', sans-serif; background-color: #eeeeee; overflow-x: hidden; }
+
+/* Header */
+.header {
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    background: #1abc9c;
+    color: white;
+    font-size: 18px;
+
+    /* background-image: 
+        linear-gradient(to right bottom, 
+        rgba(76, 216, 255, 0.2),
+        rgba(30, 108, 217, 0.2)),
+        url('https://www.fundaments.nl/dynamic/content/cloud-migration/_large_16_9/Cloud-Migration.jpg'); */
+    background-size: cover;
+  	background-position: top;
+  	position: relative;  	
+    clip-path: polygon(0 0, 100% 0, 100% 66%, 0 100%);
+}
+
+a {
+    color: black;
+    text-decoration: none;
+}
+
+.menu {
+    display: flex;
+    position: absolute;
+    width: calc(100% - 15px);
+    top: 0px;
+    left: 15px;
+}
+
+.menu * {
+    padding: 20px;
+}
+
+.menu *:hover {
+    opacity: 0.7;
+}
+
+.menu .about {
+    right: 30px;
+    position: absolute;
+}
+
+/* Page Content */
+.content {
+    padding-top: 30px;
+    padding-left: 20%;
+    padding-right: 20%;
+    padding-bottom: 5%;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: [start] 50% [center] 50% [end];
+}
+
+.post {
+    padding: 5px;
+}
+
+.bio {
+    display: flex;
+    flex-direction: column;
+    text-align: -webkit-center;
+}
