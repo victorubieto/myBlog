@@ -68,3 +68,7 @@ a {
     flex-direction: column;
     text-align: -webkit-center;
 }
+
+.bio button {
+    border: none;
+}
