@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.136/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136/examples/jsm/loaders/GLTFLoader.js";
 
 class App {
 
@@ -13,29 +14,67 @@ class App {
     
     init() {
     
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0xe7e6e5 );
+        let scene = this.scene = new THREE.Scene();
+        scene.background = new THREE.Color( 0x777777 );
         let gridHelper = new THREE.GridHelper( 10, 10 );
-        this.scene.add( gridHelper );
+        scene.add( gridHelper );
 
         // Renderer
-        this.renderer = new THREE.WebGLRenderer( { antialias: true } );
-        this.renderer.setPixelRatio( window.devicePixelRatio );
-        this.renderer.setSize( window.innerWidth, window.innerHeight );
-        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.0;
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
-        this.renderer.shadowMap.enabled = true;
-        document.body.appendChild( this.renderer.domElement );
+        let renderer = this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild( renderer.domElement );
 
         // Camera
-        this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 0.01, 1000 );
-        this.controls = new OrbitControls( this.camera, this.renderer.domElement );
-        this.controls.object.position.set(0.0, 3, 3);
-        this.controls.target.set(0.0, 1.0, 0.0);
-        this.controls.minDistance = 0.1;
-        this.controls.maxDistance = 100;
-        this.controls.update();
+        let camera = this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 0.01, 1000 );
+        let controls = this.controls = new OrbitControls( camera, renderer.domElement );
+        controls.object.position.set(0.0, 2, 3);
+        controls.target.set(0.0, 0.0, 0.0);
+        controls.minDistance = 0.1;
+        controls.maxDistance = 100;
+        controls.update();
+
+        // Lights
+        let hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.1);
+        scene.add(hemiLight);
+        let dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        let dirtarget = new THREE.Object3D();
+        dirtarget.position.set(-0.5, 0.0, -0.5); 
+        dirLight.target = dirtarget;
+        dirLight.target.updateMatrixWorld();
+        scene.add(dirLight);
+
+        const texture = new THREE.TextureLoader().load('../data/textures/coast_land_rocks_01_diff_4k.jpg',
+            undefined, undefined,
+            (error) => {
+                console.error("The texture didn't has not been loaded correctly.");
+                console.log(error);
+            }
+        );
+        
+        const material = new THREE.MeshStandardMaterial( { map: texture } );
+
+        const glbLoader = new GLTFLoader();
+        glbLoader.load('../data/models/sphere.glb',
+            (glb) => {
+                let model = glb.scene;
+                model.traverse( (object) => {
+                    if (object.isMesh) {
+                        object.material = material;//new THREE.MeshStandardMaterial();
+                        this.scene.add(object);
+                    }
+                });
+            },
+            undefined, // onProgress not supported
+            (error) => {
+                console.error("The 3D model has not been loaded correctly.");
+                console.log(error);
+            }
+        );
 
         // Call the loop
         this.animate();
@@ -55,7 +94,7 @@ class App {
 
     render() {
 
-        if(!this.renderer)
+        if (!this.renderer)
             return;
 
         this.renderer.render(this.scene, this.camera);
@@ -63,6 +102,9 @@ class App {
 
     update(dt) {
 
+        if (this.scene.getObjectByName("Sphere")) {
+            this.scene.getObjectByName("Sphere").rotation.y += 0.001;
+        }
     }
 
     onWindowResize() {

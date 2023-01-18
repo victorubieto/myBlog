@@ -60,7 +60,7 @@ class App {
         // GUI
         this.initGUI();
 
-        this.loaderGLB.load( '../data/chess.gltf', (glb) => {
+        this.loaderGLB.load( '../data/models/chess.gltf', (glb) => {
 
             let model = glb.scene;
             model.castShadow = true;
