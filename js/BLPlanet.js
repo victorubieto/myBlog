@@ -8,8 +8,8 @@ class App {
     constructor() {
         // time attributes
         this.clock = new THREE.Clock();
-        this.date = "1/1/0 00:00"
-        this.timeStep = 0.005; // 0.005
+        this.date = 0; // "1/1/0 00:00"
+        this.timeStep = 0.01; // 0.005
         this.maxDelta = 0.02;
 
         // scene attributes
@@ -89,7 +89,7 @@ class App {
         scene.add( arrowHelper1 );
         scene.add( arrowHelper2 );
 
-        var info = document.createElement('div');
+        let info = this.infoPanel = document.createElement('div');
         info.innerHTML = "Date: " + this.date;
         info.style.fontFamily = "sans-serif";
         info.style.color = "white";
@@ -124,7 +124,8 @@ class App {
         } );
         gui.add(options,'space').name('Show Space');
         gui.add(options,'orbitDebug').name('Show Orbit Debug');
-        gui.add(options,'timeMuliplier', -10, 1000000).name('Time Multiplier');
+        gui.add(options,'timeMuliplier', {Year: 31536000, Month: 2592000, Day: 86400, Hour: 3600, Minute: 60, Second: 1, Stop: 0, 
+            Minus_Second: -1, Minus_Minute: -60, Minus_Hour: -3600, Minus_Day: -86400, Minus_Month: -2592000, Minus_Year: -31536000}).name('Time Passed in 1s');
         
     }
 
@@ -137,7 +138,7 @@ class App {
 
         this.render();
         
-        // Determine a static time step
+        // // Determine a static time step
         // let maxIters = Math.min(delta, this.maxDelta) * this.options.timeMuliplier;
         // if (maxIters >= 0) {
         //     for (let iDelta = 0; iDelta <= maxIters; iDelta += this.timeStep) {
@@ -159,6 +160,59 @@ class App {
     }
 
     update(dt) {
+
+        let stopped = false;
+        if (this.infoPanel) {
+
+            let date = this.date += dt; // simulation goes to 60fps. Second --> dt = delta * 1 = 0.01. Therefore 0.6 is a minute, 36 an hour, 864 a day, 25.920 a month, and 315.360 a year
+
+            if (this.date < 0.1) {
+                date = this.date = 0.1; // 0.1 seems to work instead of 0
+                stopped = true;
+            } else {
+                //stopped = false;
+                //this.options.timeMuliplier = 0;
+            }
+
+            let seconds = date % 60;
+            let minutes = (date % 3600) / 60;
+            let hours = (date % 86400) / 3600;
+
+            let years = date / 31536000;
+            let seconds_in_year = date % 31536000; // 31.556.926s a year
+            let ranges = {
+                Jan: [0,        2678400],    // 31 days
+                Feb: [2678400,  5097600],    // 28 days
+                Mar: [5097600,  7776000],    // 31 days
+                Apr: [7776000,  10368000],   // 30 days
+                May: [10368000, 13046400],   // 31 days
+                Jun: [13046400, 15638400],   // 30 days
+                Jul: [15638400, 18316800],   // 31 days
+                Aug: [18316800, 20995200],   // 31 days
+                Sep: [20995200, 23587200],   // 30 days
+                Oct: [23587200, 26265600],   // 31 days
+                Nov: [26265600, 28857600],   // 30 days
+                Dec: [28857600, 31536000],   // 31 days
+            };
+
+            let days = 1;
+            let month = "Jan";
+            for (let y in ranges) {
+                if (ranges[y][0] < seconds_in_year && seconds_in_year < ranges[y][1]) {
+                    month = y;
+                    let seconds_in_month = seconds_in_year - ranges[y][0];
+                    days += seconds_in_month / 86400;
+                }
+            }
+
+            this.infoPanel.innerHTML = "Date: " + Math.floor(years) + " ";
+            this.infoPanel.innerHTML += month;
+            this.infoPanel.innerHTML += " " + Math.floor(days) + " / ";
+
+            this.infoPanel.innerHTML += ((hours < 10) ? "0" : "") + Math.floor(hours);
+            this.infoPanel.innerHTML += ((minutes < 10) ? ":0" : ":") + Math.floor(minutes);
+            this.infoPanel.innerHTML += ((seconds < 10) ? ":0" : ":") + Math.floor(seconds); // this.date = "1/1/0 00:00:00"
+        }
 
         //let earth = this.scene.getObjectByName("Earth");
         //let moon = this.scene.getObjectByName("Moon");
@@ -187,7 +241,7 @@ class App {
             moon.getPosition().add( moon.velocity.clone().multiplyScalar( dt ) );
             
             //console.log(moon.velocity);
-            console.log(moon.getPosition());
+            //console.log(moon.getPosition());
 
             //rotate moon to face earth
             moon.rotate(dt);
@@ -198,6 +252,7 @@ class App {
             this.arrowHelper1.position.copy(moon.getPosition());
             this.arrowHelper2.position.copy(moon.getPosition());
         }
+
     }
 
     onWindowResize() {
